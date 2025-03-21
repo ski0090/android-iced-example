@@ -23,10 +23,7 @@ android {
         }
         debug {
             minifyEnabled false
-            //packagingOptions {
-            //    doNotStrip '**/*.so'
-            //}
-            //debuggable true
+            debuggable true
         }
     }
     compileOptions {
@@ -34,6 +31,32 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
     namespace 'co.realfit.example'
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['src/main/jniLibs']
+        }
+    }
+
+    // GStreamer 라이브러리 복사
+    task copyGStreamerLibs(type: Copy) {
+        from "${System.getenv('GSTREAMER_ROOT_ANDROID')}/x86_64/lib"
+        into "src/main/jniLibs/x86_64"
+        include "libgstreamer-1.0.a"
+        include "libgstcoreelements.a"
+        include "libgstvideo-1.0.a"
+        include "libgstaudioresample.a"
+        include "libgstplayback.a"
+        include "libgstopensles.a"
+        include "libgstsoup.a"
+        include "libgobject-2.0.a"
+        include "libglib-2.0.a"
+        include "libgio-2.0.a"
+        include "libffi.a"
+        include "libintl.a"
+    }
+
+    preBuild.dependsOn copyGStreamerLibs
 }
 
 dependencies {

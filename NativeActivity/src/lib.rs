@@ -1,5 +1,5 @@
-use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
+use std::sync::Arc;
 
 use iced_wgpu::graphics::Viewport;
 use iced_wgpu::{wgpu, Engine, Renderer};
@@ -23,6 +23,7 @@ mod scene;
 
 use clipboard::Clipboard;
 use controls::Controls;
+use gstreamer as gst;
 use scene::Scene;
 
 // winit ime support
@@ -32,9 +33,10 @@ use scene::Scene;
 // https://github.com/rust-mobile/android-activity/issues/79
 
 #[no_mangle]
-fn android_main(android_app: AndroidApp) {
+fn android_main(android_app: AndroidApp) -> Result<(), Box<dyn std::error::Error>> {
     let logger_config = android_logger::Config::default().with_max_level(LevelFilter::Info);
     android_logger::init_once(logger_config);
+    gst::init()?;
 
     log::info!("android_main started");
 
@@ -47,6 +49,7 @@ fn android_main(android_app: AndroidApp) {
 
     let mut app = App::new(proxy);
     event_loop.run_app(&mut app).expect("Should run event loop");
+    Ok(())
 }
 
 #[derive(Debug)]
@@ -217,13 +220,11 @@ impl ApplicationHandler<UserEvent> for App {
         let event_proxy = self.proxy.clone();
         let is_running = self.running.clone();
 
-        std::thread::spawn(move || {
-            loop {
-                std::thread::sleep(std::time::Duration::from_secs(10));
-                if let Err(_e) = event_proxy.send_event(UserEvent::Tick) {
-                    is_running.store(false, Ordering::SeqCst);
-                    break;
-                }
+        std::thread::spawn(move || loop {
+            std::thread::sleep(std::time::Duration::from_secs(10));
+            if let Err(_e) = event_proxy.send_event(UserEvent::Tick) {
+                is_running.store(false, Ordering::SeqCst);
+                break;
             }
         });
     }

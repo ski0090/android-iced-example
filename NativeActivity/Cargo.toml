@@ -7,36 +7,74 @@ edition = "2021"
 name = "example"
 crate-type = ["cdylib"]
 
+[features]
+android = []
+
 [dependencies]
 log = "0.4"
-android_logger = "0.14.1"
+android_logger = "0.15"
 android-activity = { version = "0.6", features = ["native-activity"] }
 ndk-context = "0.1"
 jni = { version = "0.21", features = ["invocation"] }
 # ndk-sys = "0.6.0"
 # ndk = "0.9.0"
 futures = "0.3"
+gstreamer = { version = "0.23", features = ["v1_26"] }
+gstreamer-app = { version = "0.23", features = ["v1_26"] }
+gstreamer-video = { version = "0.23", features = ["v1_26"] }
+
+[target.'cfg(target_os = "android")'.dependencies]
+ndk-sys = "0.6.0"
 
 [dependencies.iced_core]
 git = "https://github.com/ibaryshnikov/iced.git"
-rev = "009bf6c"
+branch = "android"
 # path = "../../iced/core"
 
 [dependencies.iced_widget]
 git = "https://github.com/ibaryshnikov/iced.git"
-rev = "009bf6c"
-# path = "../../iced/widget"
+branch = "android"
 features = ["wgpu"]
 
 [dependencies.iced_winit]
 git = "https://github.com/ibaryshnikov/iced.git"
-rev = "009bf6c"
-# path = "../../iced/winit"
+branch = "android"
 
 [dependencies.iced_wgpu]
 git = "https://github.com/ibaryshnikov/iced.git"
-rev = "009bf6c"
-# path = "../../iced/wgpu"
+branch = "android"
 
-[patch.crates-io]
-softbuffer = { git = "https://github.com/MarijnS95/softbuffer.git", rev = "d5cc95a" } # branch = "android"
+[build-dependencies]
+pkg-config = "0.3"
+
+[package.metadata.android]
+static_libs = [
+  "pcre2-8",
+  "iconv",
+  "gmodule-2.0",
+  "gobject-2.0",
+  "glib-2.0",
+  "ffi",
+  "gstreamer-1.0",
+  "gstvideo-1.0",
+  "gio-2.0",
+  "intl",
+  "gstapp-1.0",
+  "gstbase-1.0",
+  "gstpbutils-1.0",
+  "gstaudio-1.0",
+  "gsttag-1.0",
+  "gstcodecparsers-1.0",
+  "gstgl-1.0",
+  "z",
+]
+
+# 정적 링크를 위한 설정
+[package.metadata.android.link]
+static = true
+search_paths = ["C:/Android/gstreamer-1.0-android/x86_64/lib"]
+force_load = true
+
+[package.metadata.android.environment]
+ICONV_LIBRARY_PATH = "C:/Android/gstreamer-1.0-android/x86_64/lib"
+PCRE2_LIBRARY_PATH = "C:/Android/gstreamer-1.0-android/x86_64/lib"
